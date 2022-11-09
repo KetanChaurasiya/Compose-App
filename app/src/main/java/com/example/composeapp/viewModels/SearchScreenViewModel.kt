@@ -13,6 +13,10 @@ class SearchScreenViewModel : ViewModel() {
     val magicList: StateFlow<List<MagicDoor>> = _magicList
     private val remoteDb: DefaultRepository = DefaultRepository()
 
+    init {
+        getList()
+    }
+
     fun getList() {
         viewModelScope.launch {
             remoteDb.getList().collect { response ->
@@ -20,5 +24,10 @@ class SearchScreenViewModel : ViewModel() {
             }
         }
 
+    }
+
+    fun transformList(magicDoor: MagicDoor) {
+        _magicList.value =
+            _magicList.value.map { door -> if (door == magicDoor) magicDoor.copy(isOpened = true) else door }
     }
 }

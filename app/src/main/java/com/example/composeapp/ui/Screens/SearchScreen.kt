@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,28 +27,30 @@ fun SearchScreen() {
     val viewModel: SearchScreenViewModel = viewModel()
     val coroutineScope = rememberCoroutineScope()
 
-    val remotelist: MutableState<List<MagicDoor>> = remember {
+    val remoteList: MutableState<List<MagicDoor>> = rememberSaveable {
         mutableStateOf(emptyList<MagicDoor>())
     }
-    val isVerticalScroll: MutableState<Boolean> = remember {
+    val isVerticalScroll: MutableState<Boolean> = rememberSaveable {
         mutableStateOf(true)
     }
     LaunchedEffect(key1 = "SearchScreen") {
-        viewModel.getList()
         coroutineScope.launch(Dispatchers.IO) {
             viewModel.magicList.collect {
-                remotelist.value = it
+                remoteList.value = it
             }
         }
     }
     Scaffold(
         topBar = {
-            Row {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
                 TextButton(
                     modifier = Modifier
                         .height(40.dp)
                         .wrapContentSize(align = Alignment.Center),
-                    //.weight(1f),
                     onClick = {
                         viewModel.getList()
                     },
@@ -62,7 +65,6 @@ fun SearchScreen() {
                     modifier = Modifier
                         .height(40.dp)
                         .wrapContentSize(align = Alignment.Center),
-                    //.weight(1f),
                     onClick = {
                         isVerticalScroll.value = !isVerticalScroll.value
                     },
@@ -91,9 +93,11 @@ fun SearchScreen() {
                         .align(Alignment.CenterHorizontally)
                         .padding(start = 5.dp, end = 5.dp, bottom = 60.dp)
                 ) {
-                    items(remotelist.value) { magicCard ->
+                    items(remoteList.value) { magicCard ->
                         MagicDoorCard(magicDoor = magicCard) {
-                            remotelist.value.find { item -> item == magicCard }?.isOpened = true
+                            remoteList.value = remoteList.value.map { door ->
+                                if (door == magicCard) magicCard.copy(isOpened = true) else door
+                            }
                         }
                     }
                 }
@@ -105,9 +109,9 @@ fun SearchScreen() {
                         .align(Alignment.CenterHorizontally)
                         .padding(start = 5.dp, end = 5.dp, bottom = 60.dp)
                 ) {
-                    items(remotelist.value) { magicCard ->
+                    items(remoteList.value) { magicCard ->
                         MagicDoorCard(magicDoor = magicCard) {
-                            remotelist.value.find { item -> item == magicCard }?.isOpened = true
+                            viewModel.transformList(magicCard)
                         }
                     }
                 }
