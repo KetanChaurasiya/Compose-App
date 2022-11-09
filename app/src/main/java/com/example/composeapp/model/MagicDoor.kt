@@ -6,5 +6,5 @@ data class MagicDoor(
     val couponCode: String?,
     val points: Long?,
     val message: String,
-    var isOpened: Boolean
+    val isOpened: Boolean
 )
