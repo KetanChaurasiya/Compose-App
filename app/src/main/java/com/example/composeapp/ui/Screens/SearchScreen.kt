@@ -6,7 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,32 +16,40 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.composeapp.contracts.searchScreen.SearchScreenSideEffect
 import com.example.composeapp.model.MagicDoor
 import com.example.composeapp.ui.components.MagicDoorCard
 import com.example.composeapp.viewModels.SearchScreenViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import org.orbitmvi.orbit.compose.collectSideEffect
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun SearchScreen() {
     val viewModel: SearchScreenViewModel = viewModel()
-    val coroutineScope = rememberCoroutineScope()
+    // can be done by state
+    //now for the sake of implementation done by sideeffects
+    // val state by viewModel.collectAsState()
+    // val coroutineScope = rememberCoroutineScope()
 
     val remoteList: MutableState<List<MagicDoor>> = rememberSaveable {
-        mutableStateOf(emptyList<MagicDoor>())
+        mutableStateOf(emptyList())
+    }
+    viewModel.collectSideEffect {
+        when (it) {
+            is SearchScreenSideEffect.TransformList -> remoteList.value = it.magicList
+            is SearchScreenSideEffect.ShowList -> remoteList.value = it.magicList
+        }
     }
     val isVerticalScroll: MutableState<Boolean> = rememberSaveable {
         mutableStateOf(true)
     }
-    LaunchedEffect(key1 = "SearchScreen") {
-        coroutineScope.launch(Dispatchers.IO) {
-            viewModel.magicList.collect {
-                remoteList.value = it
-            }
-        }
-    }
+//    LaunchedEffect(key1 = "SearchScreen") {
+//        coroutineScope.launch(Dispatchers.IO) {
+//             remoteList.value=state.magicList
+//        }
+//    }
     Scaffold(
         topBar = {
             Row(
@@ -52,7 +62,7 @@ fun SearchScreen() {
                         .height(40.dp)
                         .wrapContentSize(align = Alignment.Center),
                     onClick = {
-                        viewModel.getList()
+                        viewModel.resetList()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Gray,
@@ -83,7 +93,7 @@ fun SearchScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
-                .background(Color.Gray)
+                .background(Color.LightGray)
         ) {
             if (isVerticalScroll.value) {
                 LazyColumn(
@@ -95,9 +105,7 @@ fun SearchScreen() {
                 ) {
                     items(remoteList.value) { magicCard ->
                         MagicDoorCard(magicDoor = magicCard) {
-                            remoteList.value = remoteList.value.map { door ->
-                                if (door == magicCard) magicCard.copy(isOpened = true) else door
-                            }
+                            viewModel.transformList(magicCard)
                         }
                     }
                 }
