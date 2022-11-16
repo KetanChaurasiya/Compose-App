@@ -7,9 +7,10 @@ import kotlinx.coroutines.flow.flow
 class DefaultRepository {
 
 
-    fun getList(count: Int = 10) = flow {
-        emit(generateMagicDoorList(count))
-    }
+    fun getList(count: Int = 10) = generateMagicDoorList(count)
+//        flow {
+//        emit(generateMagicDoorList(count))
+//    }
 
 
     private fun generateMagicDoorList(count: Int): List<MagicDoor> {
