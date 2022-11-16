@@ -1,5 +1,6 @@
 package com.example.composeapp.ui
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.shapes.OvalShape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -31,6 +32,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.composeapp.ui.theme.Screen
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomBottomNavigation() {
@@ -38,7 +40,6 @@ fun CustomBottomNavigation() {
     Surface(color = Color.Gray) {
 
         Scaffold(
-            modifier = Modifier.padding(8.dp),
             bottomBar = {
                 BottomNav(
                     navController
@@ -65,9 +66,16 @@ fun BottomNav(
         modifier = Modifier
             .background(
                 MaterialTheme.colorScheme.background,
-                RoundedCornerShape(25.dp)
+                RoundedCornerShape(
+                    topStart = 25.dp,
+                    topEnd = 25.dp
+                )
             )
-            .padding(start = 8.dp)
+            .padding(
+                start = 8.dp,
+                end = 8.dp,
+                top = 10.dp
+            )
             .height(56.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround,
@@ -78,8 +86,9 @@ fun BottomNav(
 
             CustomBottomNavigationItem(
                 item = item,
-            currentDestination=currentDestination,
-            navController = navController)
+                currentDestination = currentDestination,
+                navController = navController
+            )
 
         }
 
@@ -122,7 +131,7 @@ fun CustomBottomNavigationItem(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
-                modifier = if(selected)Modifier
+                modifier = if (selected) Modifier
                     .background(
                         contentColor,
                         CircleShape
@@ -138,7 +147,7 @@ fun CustomBottomNavigationItem(
                 contentAlignment = Center
             ) {
                 Icon(
-                   if(selected)item.icon_focused else item.icon,
+                    if (selected) item.icon_focused else item.icon,
                     null,
                     Modifier.size(20.dp),
                     tint = if (selected) Color.White else Color.Black
